@@ -1,0 +1,10 @@
+asgiref==3.3.1
+comtypes==1.1.7
+Django==3.1.4
+PyAudio @ file:///E:/voice_input/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+pypiwin32==223
+pyttsx3==2.90
+pytz==2020.5
+pywin32==300
+SpeechRecognition==3.8.1
+sqlparse==0.4.1
