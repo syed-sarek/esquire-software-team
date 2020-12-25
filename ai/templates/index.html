@@ -14,20 +14,25 @@
   <h2>Basic Form</h2>
   <form>
     <div class="form-group">
-      <label for="name">First Name:</label>
-      <input type="text" class="form-control input" onfocus="getInput('f_name');" id="f_name" placeholder="Enter you first name">
+      <label for="f_name">First Name:</label>
+      <input type="text" class="form-control input" onfocus="getInput('f_name','l_name');" id="f_name" placeholder="Enter you first name">
     </div>
     <div class="form-group">
-      <label for="name">Last Name:</label>
-      <input type="text" class="form-control input" onfocus="getInput('l_name');"  id="l_name" placeholder="Enter you last name">
+    <label for="l_name">Last Name:</label>
+      <input type="text" class="form-control input" onfocus="getInput('l_name','number');"  id="l_name" placeholder="Enter you last name">
     </div>
     <div class="form-group">
-      <label for="pwd">Number:</label>
-      <input type="text" class="form-control" id="number" onfocus="getInput('number');" placeholder="Enter your number">
+      <label for="number">Number:</label>
+      <input type="text" class="form-control input" onfocus="getInput('number','address');"  id="number"  placeholder="Enter your number">
     </div>
     <div class="form-group">
       <label for="address">Address:</label>
-      <input type="text" class="form-control" id="address" onfocus="getInput('address');" placeholder="Enter your address">
+      <input type="text" class="form-control input" onfocus="getInput('address','status');" id="address" placeholder="Enter your address">
+    </div>
+    <div class="form-group">
+      <label for="address">Status:</label>
+      <input type="checkbox" name="status" onfocus="getInput('status','');" id="status" />
+      
     </div>
   </form>
 </div>
@@ -36,11 +41,17 @@
 <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
 
 <script>
+$(document).ready(function(){
+  $("#f_name").focus();
+  //var focused = $(':focus');
+});
 
-function getInput(input){
-    var txt = document.getElementById(input).placeholder;
-    var msg = new SpeechSynthesisUtterance(txt);
-    window.speechSynthesis.speak(msg);
+function getInput(input,next){
+    // uncomment these lines for placeholder text hearing.
+    // var txt = document.getElementById(input).placeholder;
+    // var msg = new SpeechSynthesisUtterance(txt);
+    // window.speechSynthesis.speak(msg);
+    
     var url = '{{request.path}}';
     $.ajax({
         url: url,
@@ -48,17 +59,29 @@ function getInput(input){
             'data': "",
         },
         success: function (data) {
-            $("#"+input.toString()).val(data);
+            // if(data != "Your Voice Not Clear"){
+            //   var msg = new SpeechSynthesisUtterance("Your Voice Not Clear");
+            //   window.speechSynthesis.speak(msg);
+            // }
+            // else if(data != "Internet Connection Failed!"){
+            //   var msg = new SpeechSynthesisUtterance("Internet Connection Failed!");
+            //   window.speechSynthesis.speak(msg);
+            // }
+            // else{
+            //   $("#"+input.toString()).val(data);
+            // }
+            //alert($("input[name=Gender]").val());
+            if($("#"+input.toString())[0].type == "checkbox"){
+              if(data == "yes"){
+                $("#"+input.toString()).prop('checked', true);
+            }
+          }
+            
 
-            var nextI = $("input").index(this)+1,
-            next=$("input").eq(nextI);
-            next.focus();
-
-            //$(this).next(".inputs").focus();
-
-            // var index = $('.input').index(this) + 1;
-            // $('.input').eq(index).focus();
-            // $('.input').eq(index).select();
+            if (data.length > 0) $("#"+input.toString()).val(data);
+            if(next.length > 0){
+              $("#"+next.toString()).focus();
+            }
         }
     });
 

@@ -15,9 +15,11 @@ def index(request):
             output = " " + r.recognize_google(audio, language="en")
             # output = " " + r.recognize_google(audio, language="bn")
         except sr.UnknownValueError:
-            output = "Could not understand audio!"
+            output = ""
+            # output = "Your Voice Not Clear"
         except sr.RequestError as e:
-            output = "Could not connect with internet!"
+            output = ""
+            # output = "Internet Connection Failed!"
         
         return JsonResponse(output,safe=False)
 
