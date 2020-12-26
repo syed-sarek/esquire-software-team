@@ -1,94 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
+
 <head>
   <title>Voice Command Example</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/assets/jquery-3.5.1.min.js"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </head>
+
 <body>
 
-<div class="container">
-  <h2>Basic Form</h2>
-  <form>
-    <div class="form-group">
-      <label for="f_name">First Name:</label>
-      <input type="text" class="form-control input" onfocus="getInput('f_name','l_name');" id="f_name" placeholder="Enter you first name">
-    </div>
-    <div class="form-group">
-    <label for="l_name">Last Name:</label>
-      <input type="text" class="form-control input" onfocus="getInput('l_name','number');"  id="l_name" placeholder="Enter you last name">
-    </div>
-    <div class="form-group">
-      <label for="number">Number:</label>
-      <input type="text" class="form-control input" onfocus="getInput('number','address');"  id="number"  placeholder="Enter your number">
-    </div>
-    <div class="form-group">
-      <label for="address">Address:</label>
-      <input type="text" class="form-control input" onfocus="getInput('address','status');" id="address" placeholder="Enter your address">
-    </div>
-    <div class="form-group">
-      <label for="address">Status:</label>
-      <input type="checkbox" name="status" onfocus="getInput('status','');" id="status" />
-      
-    </div>
-  </form>
-</div>
+  <div class="container">
+    <h2>Basic Form</h2>
+    <form id="entryForm" method="post"> {% csrf_token %}
+      <div class="form-group">
+        <label for="f_name">Name:</label>
+        <input type="text" class="form-control input" required name="name" id="name" placeholder="Enter your name">
+      </div>
+      <div class="form-group">
+        <label for="address">Details:</label>
+        <textarea row="3" class="form-control input" required name="detail" id="detail" placeholder="Write about yourself"></textarea>
+      </div>
+      <div class="form-group">
+        <input type="submit" class="btn btn-success" value="Submit" id="btnSubmit">
+      </div>
+    </form>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">SL</th>
+        <th scope="col">Name</th>
+        <th scope="col">Detail</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for data in employee_list %}
+      <tr>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td>{{ data.name }}</td>
+        <td>{{ data.detail }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script> -->
 
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
-
-<script>
-$(document).ready(function(){
-  $("#f_name").focus();
-  //var focused = $(':focus');
-});
-
-function getInput(input,next){
-    // uncomment these lines for placeholder text hearing.
-    // var txt = document.getElementById(input).placeholder;
-    // var msg = new SpeechSynthesisUtterance(txt);
-    // window.speechSynthesis.speak(msg);
-    
-    var url = '{{request.path}}';
-    $.ajax({
-        url: url,
-        data: {
-            'data': "",
-        },
-        success: function (data) {
-            // if(data != "Your Voice Not Clear"){
-            //   var msg = new SpeechSynthesisUtterance("Your Voice Not Clear");
-            //   window.speechSynthesis.speak(msg);
-            // }
-            // else if(data != "Internet Connection Failed!"){
-            //   var msg = new SpeechSynthesisUtterance("Internet Connection Failed!");
-            //   window.speechSynthesis.speak(msg);
-            // }
-            // else{
-            //   $("#"+input.toString()).val(data);
-            // }
-            //alert($("input[name=Gender]").val());
-            if($("#"+input.toString())[0].type == "checkbox"){
-              if(data == "yes"){
-                $("#"+input.toString()).prop('checked', true);
-            }
-          }
-            
-
-            if (data.length > 0) $("#"+input.toString()).val(data);
-            if(next.length > 0){
-              $("#"+next.toString()).focus();
-            }
-        }
+  <script>
+    var count = 0;
+    $(document).ready(function () {
+      $("#name").focus();
     });
 
-}
+    $("#name").focus(function () {
+      if ($("#name").val().length == 0) {
 
+        if (count == 0) {
+          count = 1;
+          var txt = $(this)[0].placeholder;
+          var msg = new SpeechSynthesisUtterance(txt);
+          window.speechSynthesis.speak(msg);
+        }
 
-</script>
+        var url = '{{request.path}}';
+        $.ajax({
+          url: url,
+          data: {
+            'data': "",
+          },
+          success: function (data) {
+            if (data.includes('save') || data.includes('submit')) {
+              if ($("#name").val().length > 0 && $("#detail").val().length > 0) {
+                $("#entryForm").submit();
+              }
+              else {
+                var msg = new SpeechSynthesisUtterance("Please fill up the form!");
+                window.speechSynthesis.speak(msg);
+                focused.focus();
+              }
+
+            }
+            else if (data.includes('reload') || data.includes('refresh') || data.includes('reset')) {
+              location.reload();
+            }
+            else if (data == "Please Speak Again") {
+              if (count == 0) {
+                count = 1;
+                var msg = new SpeechSynthesisUtterance("Please Speak Again");
+                window.speechSynthesis.speak(msg);
+              }
+            }
+            else if (data == "Internet Connection Failed!" && count == 0) {
+              count = 1;
+              var msg = new SpeechSynthesisUtterance("Internet Connection Failed!");
+              window.speechSynthesis.speak(msg);
+            }
+            else {
+              $("#name").val(data);
+              console.log('data ', data);
+              count = 0;
+              $("#detail").focus();
+            }
+
+          }
+        });
+      }
+      else $("#detail").focus();
+    });
+
+    $("#detail").focus(function () {
+      if ($("#detail").val().length == 0) {
+
+        if (count == 0) {
+          count = 1;
+          var txt = $(this)[0].placeholder;
+          var msg = new SpeechSynthesisUtterance(txt);
+          window.speechSynthesis.speak(msg);
+        }
+
+        var url = '{{request.path}}';
+        $.ajax({
+          url: url,
+          data: {
+            'data': "",
+          },
+          success: function (data) {
+            if (data.includes('save') || data.includes('submit')) {
+              if ($("#name").val().length > 0 && $("#detail").val().length > 0) {
+                $("#entryForm").submit();
+              }
+              else {
+                var msg = new SpeechSynthesisUtterance("Please fill up the form!");
+                window.speechSynthesis.speak(msg);
+                focused.focus();
+              }
+
+            }
+            else if (data.includes('reload') || data.includes('refresh') || data.includes('reset')) {
+              location.reload();
+            }
+            else if (data == "Please Speak Again") {
+              if (count == 0) {
+                count = 1;
+                var msg = new SpeechSynthesisUtterance("Please Speak Again");
+                window.speechSynthesis.speak(msg);
+              }
+            }
+            else if (data == "Internet Connection Failed!" && count == 0) {
+              count = 1;
+              var msg = new SpeechSynthesisUtterance("Internet Connection Failed!");
+              window.speechSynthesis.speak(msg);
+            }
+            else {
+              $("#detail").val(data);
+              formSubmit();
+              count = 0;
+            }
+
+          }
+        });
+      }
+    });
+
+    function formSubmit(){
+      if ($("#name").val().length > 0 && $("#detail").val().length > 0) {
+        var msg = new SpeechSynthesisUtterance("Do you want to submit the form?");
+        window.speechSynthesis.speak(msg);
+        var url = '{{request.path}}';
+        $.ajax({
+          url: url,
+          data: {
+            'data': "",
+          },
+          success: function (data) {
+            if (data.includes('yes') || data.includes('save') || data.includes('submit')) {
+                $("#entryForm").submit();
+              }
+              else {
+                var msg = new SpeechSynthesisUtterance("You can place submit button to submit the form");
+                window.speechSynthesis.speak(msg);
+                $("#btnSubmit").focus();
+              }
+
+            }
+        });
+      }
+      else {
+        var msg = new SpeechSynthesisUtterance("Please fill up the form!");
+        window.speechSynthesis.speak(msg);
+        $("#name").focus();
+        }
+    }
+
+  </script>
 
 </body>
+
 </html>

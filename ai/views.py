@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from ai import models
+from ai.models import *
 from django.db import connection 
 import speech_recognition as sr
 from django.http import JsonResponse
 
 def index(request): 
+    if request.method == "POST":
+        Employee.objects.create(name = request.POST["name"], detail = request.POST["detail"])
     if request.is_ajax():
         r = sr.Recognizer()
         with sr.Microphone() as source:
@@ -15,15 +17,17 @@ def index(request):
             output = " " + r.recognize_google(audio, language="en")
             # output = " " + r.recognize_google(audio, language="bn")
         except sr.UnknownValueError:
-            output = ""
+            output = "Please Speak Again"
             # output = "Your Voice Not Clear"
         except sr.RequestError as e:
-            output = ""
+            output = "Internet Connection Failed!"
             # output = "Internet Connection Failed!"
         
         return JsonResponse(output,safe=False)
-
-    return render(request, "index.html")
+    context = {
+        'employee_list':Employee.objects.all().order_by("-id"),
+    }
+    return render(request, "index.html", context)
 
 # Python program to translate 
 # speech to text and text to speech 
