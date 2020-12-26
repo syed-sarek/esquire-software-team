@@ -1,9 +1,0 @@
-version: 1
-backend:
-  phases:
-    build:
-      commands:
-        - amazon-linux-extras install python3.9
-        - ln -fs /usr/bin/python3.9 /usr/bin/python3
-        - pip3.8 install pipenv
-        - amplifyPush --simple
